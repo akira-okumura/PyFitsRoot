@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.1 2009/03/22 10:25:42 oxon Exp $
+$Id: wcsutil.py,v 1.2 2009/05/28 16:18:53 oxon Exp $
 """
 import numpy
 import pyfits
@@ -49,12 +49,12 @@ class FitsImage(ROOT.TH2D):
         self.label = []
     
     def sky2bin(self, x, y):
-        x, y = self.wcs.wcs_sky2pix(numpy.array([x]), numpy.array([y]))
-        return x[0], y[0]
+        xy = self.wcs.wcs_sky2pix(numpy.array([[x, y],]), 1)
+        return xy[0][0], xy[0][1]
 
     def bin2sky(self, x, y):
-        x, y = self.wcs.wcs_pix2sky(numpy.array([x]), numpy.array([y]))
-        return x[0], y[0]
+        xy = self.wcs.wcs_pix2sky(numpy.array([[x, y],]), 1)
+        return xy[0][0], xy[0][1]
 
     def add_gridA(self, b, a0, da):
         self.grid.append(FitsGrid(self, 0, b, da, a0))
