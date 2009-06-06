@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.2 2009/05/28 16:18:53 oxon Exp $
+$Id: wcsutil.py,v 1.3 2009/06/06 15:41:52 oxon Exp $
 """
 import numpy
 import pyfits
@@ -37,7 +37,7 @@ def border_coords(inx, iny, out, it=8):
 class FitsImage(ROOT.TH2D):
     def __init__(self, fname, extension, name="", title=""):
         hdu = pyfits.open(fname)[extension]
-        xbins, ybins = hdu.data.shape
+        ybins, xbins = hdu.data.shape
 
         self.wcs = pywcs.WCS(hdu.header)
         ROOT.TH2D.__init__(self, name, title, xbins, 0.5, xbins + 0.5, ybins, 0.5, ybins + 0.5)
