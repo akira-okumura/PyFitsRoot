@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.3 2009/06/06 15:41:52 oxon Exp $
+$Id: wcsutil.py,v 1.4 2009/06/08 15:38:53 oxon Exp $
 """
 import numpy
 import pyfits
@@ -36,14 +36,25 @@ def border_coords(inx, iny, out, it=8):
 
 class FitsImage(ROOT.TH2D):
     def __init__(self, fname, extension, name="", title=""):
-        hdu = pyfits.open(fname)[extension]
-        ybins, xbins = hdu.data.shape
+        if type(extension) != list and type(extension) != tuple:
+            hdu = pyfits.open(fname)[extension]
+            ybins, xbins = hdu.data.shape
+        else:
+            hdu = pyfits.open(fname)[extension[0]]
+            ybins, xbins = hdu.data.shape[1:]
 
         self.wcs = pywcs.WCS(hdu.header)
         ROOT.TH2D.__init__(self, name, title, xbins, 0.5, xbins + 0.5, ybins, 0.5, ybins + 0.5)
-        for y in range(ybins):
-            for x in range(xbins):
-                self.SetBinContent(x + 1, y + 1, hdu.data[y, x])
+        if type(extension) != list and type(extension) != tuple:
+            for y in range(ybins):
+                for x in range(xbins):
+                    self.SetBinContent(x + 1, y + 1, hdu.data[y, x])
+                    self.SetBinContent(x + 1, y + 1, hdu.data[y, x])
+        else:
+            for y in range(ybins):
+                for x in range(xbins):
+                    self.SetBinContent(x + 1, y + 1, hdu.data[extension[1], y, x])
+                    self.SetBinContent(x + 1, y + 1, hdu.data[extension[1], y, x])
 
         self.grid = []
         self.label = []
