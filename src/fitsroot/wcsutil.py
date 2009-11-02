@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.5 2009/11/02 09:58:49 oxon Exp $
+$Id: wcsutil.py,v 1.6 2009/11/02 10:40:52 oxon Exp $
 """
 import numpy
 import pyfits
@@ -45,16 +45,19 @@ class FitsImage(ROOT.TH2D):
 
         self.wcs = pywcs.WCS(hdu.header)
         ROOT.TH2D.__init__(self, name, title, xbins, 0.5, xbins + 0.5, ybins, 0.5, ybins + 0.5)
+        setbincontent = self.SetBinContent # for speed up
         if type(extension) != list and type(extension) != tuple:
+            data = hdu.data # for speed up
             for y in range(ybins):
+                datay = data[y] # for speed up
                 for x in range(xbins):
-                    self.SetBinContent(x + 1, y + 1, hdu.data[y, x])
-                    self.SetBinContent(x + 1, y + 1, hdu.data[y, x])
+                    setbincontent(x + 1, y + 1, datay[x])
         else:
+            data = hdu.data[extension[1]] # for speed up
             for y in range(ybins):
+                datay = data[y]
                 for x in range(xbins):
-                    self.SetBinContent(x + 1, y + 1, hdu.data[extension[1], y, x])
-                    self.SetBinContent(x + 1, y + 1, hdu.data[extension[1], y, x])
+                    setbincontent(x + 1, y + 1, datay[x])
 
         self.grid = []
         self.label = []
