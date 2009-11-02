@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.4 2009/06/08 15:38:53 oxon Exp $
+$Id: wcsutil.py,v 1.5 2009/11/02 09:58:49 oxon Exp $
 """
 import numpy
 import pyfits
@@ -100,13 +100,17 @@ class FitsImage(ROOT.TH2D):
                          self.bin2sky(uxmax, uymin),
                          self.bin2sky(uxmax, uymax),
                          self.bin2sky(uxmin, uymax),
+                         self.bin2sky(uxmin, (uymin + uymax)/2),
+                         self.bin2sky((uxmin + uxmax)/2, uymin),
+                         self.bin2sky(uxmax, (uymin + uymax)/2),
+                         self.bin2sky((uxmin + uxmax)/2, uymax),
                          self.bin2sky((uxmin + uxmax)/2, (uymin + uymax)/2)
                         )
         limA, limB = list(limA), list(limB)
 
         minB = maxB = limB[0]
 
-        for i in range(1, 4):
+        for i in range(len(limA)):
             minB = min(minB, limB[i])
             maxB = max(maxB, limB[i])
 
