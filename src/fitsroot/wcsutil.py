@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.6 2009/11/02 10:40:52 oxon Exp $
+$Id: wcsutil.py,v 1.7 2009/12/19 07:11:43 oxon Exp $
 """
 import numpy
 import pyfits
@@ -196,44 +196,57 @@ class FitsGrid(ROOT.TAttLine):
         self.pol = []
 
     def draw(self):
+        N_POINT = 200
         status = 0
-        xarr = numpy.zeros(100)
-        yarr = numpy.zeros(100)
+        xarr = numpy.zeros(N_POINT)
+        yarr = numpy.zeros(N_POINT)
         prex, prey = 0, 0
         
         if self.coord == 0:
             A1 = self.img.minA
             A2 = self.img.maxA
             B1 = B2 = self.y
-            dA = (A2 - A1)/99.
+            dA = (A2 - A1)/(N_POINT - 1.)
             dB = 0.
         else:
             A1 = A2 = self.y
             B1 = self.img.minB
             B2 = self.img.maxB
             dA = 0.
-            dB = (B2 - B1)/99.
+            dB = (B2 - B1)/(N_POINT - 1.)
 
         n = 0
 
-        for i in range(100):
+        NOT_USED = 0
+        GRID_START = 1
+        ON_GRID = 2
+        CROSS_BOUNDARY = 3
+        BIG_JUMP = 4
+        for i in range(N_POINT):
             xarr[n], yarr[n] = self.img.sky2bin(A1 + dA*i, B1 + dB*i)
             out = coords_out(xarr[n], yarr[n])
 
-            if (status == 0 or status == 3) and not out:
-                status = 1
-            elif status == 1 and not out:
-                status = 2
-            elif (status == 1 or status == 2) and out:
-                status = 3
-            elif status == 3 and out:
-                status = 0
+            if (status == NOT_USED or status == CROSS_BOUNDARY) and not out:
+                status = GRID_START
+            elif status == GRID_START and not out:
+                status = ON_GRID
+            elif (status == GRID_START or status == ON_GRID) and out:
+                status = CROSS_BOUNDARY
+            elif status == CROSS_BOUNDARY and out:
+                status = NOT_USED
+            elif status == ON_GRID and n >= 2:
+                dx1 = xarr[n - 2] - xarr[n - 1]
+                dy1 = yarr[n - 2] - yarr[n - 1]
+                dx2 = xarr[n]     - xarr[n - 1]
+                dy2 = yarr[n]     - yarr[n - 1]
+                if (dx2*dx2 + dy2*dy2)/(dx1*dx1 + dy1*dy1) > 100.:# or dx1*dx2 + dy1*dy2 > 0.: # maybe good enough
+                    status = BIG_JUMP
 
-            if status == 0:
+            if status == NOT_USED:
                 prex = xarr[n]
                 prey = yarr[n]
                 continue
-            elif status == 1 and i != 0:
+            elif status == GRID_START and i != 0:
                 pos = [prex, prey]
                 border_coords(xarr[n], yarr[n], pos)
                 prex, prey = pos[0], pos[1]
@@ -242,16 +255,21 @@ class FitsGrid(ROOT.TAttLine):
                 xarr[n] = prex
                 yarr[n] = prey
                 n += 1
-            elif status == 3:
+            elif status == CROSS_BOUNDARY:
                 pos = [xarr[n], yarr[n]]
                 border_coords(xarr[n - 1], yarr[n - 1], pos)
                 xarr[n], yarr[n] = pos[0], pos[1]
 
             n += 1
 
-            if status == 3:
+            if status == CROSS_BOUNDARY:
                 self.pol.append(ROOT.TPolyLine(n, xarr, yarr))
                 n = 0
+            elif status == BIG_JUMP:
+                self.pol.append(ROOT.TPolyLine(n - 2, xarr, yarr))
+                xarr[0], yarr[0] = xarr[n - 1], yarr[n - 1]
+                n = 1
+                status = GRID_START
 
         self.pol.append(ROOT.TPolyLine(n, xarr, yarr))
 
