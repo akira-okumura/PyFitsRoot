@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.7 2009/12/19 07:11:43 oxon Exp $
+$Id: wcsutil.py,v 1.8 2010/02/18 15:28:12 oxon Exp $
 """
 import numpy
 import pyfits
@@ -99,6 +99,14 @@ class FitsImage(ROOT.TH2D):
         uxmax = ROOT.gPad.GetUxmax()
         uymin = ROOT.gPad.GetUymin()
         uymax = ROOT.gPad.GetUymax()
+        """
+         3   7   2
+        +---+---+
+        |4  |8  |6
+        +---+---+
+        |0  |5  |1
+        +---+---+
+        """
         limA, limB = zip(self.bin2sky(uxmin, uymin),
                          self.bin2sky(uxmax, uymin),
                          self.bin2sky(uxmax, uymax),
@@ -111,11 +119,8 @@ class FitsImage(ROOT.TH2D):
                         )
         limA, limB = list(limA), list(limB)
 
-        minB = maxB = limB[0]
-
-        for i in range(len(limA)):
-            minB = min(minB, limB[i])
-            maxB = max(maxB, limB[i])
+        minB = min(limB)
+        maxB = max(limB)
 
         pol = False
 
@@ -136,9 +141,10 @@ class FitsImage(ROOT.TH2D):
             pol = True
 
         if not pol:
-            diff = (limA[0] - limA[4], limA[4] - limA[2],
-                    limA[1] - limA[4], limA[4] - limA[3])
+            diff = (limA[0] - limA[8], limA[8] - limA[2],
+                    limA[1] - limA[8], limA[8] - limA[3])
             if diff[0]*diff[1] < 0. or diff[2]*diff[3] < 0.:
+                # probably include A = 0 (=360)in the FOV
                 minA = maxA = limA[0]
                 for i in range(1, 4):
                     minA = min(minA, limA[i])
