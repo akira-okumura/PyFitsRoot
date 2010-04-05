@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.9 2010/04/05 05:22:39 oxon Exp $
+$Id: wcsutil.py,v 1.10 2010/04/05 06:45:26 oxon Exp $
 """
 import numpy
 import pyfits
@@ -166,6 +166,48 @@ class FitsImage(ROOT.TH2D):
 
         for grid in self.grid:
             grid.draw()
+
+class IntegratedFitsImage(FitsImage):
+    def __init__(self, fname, extension, v1, v2, name="", title=""):
+        hdu = pyfits.open(fname)[extension]
+        zbins, ybins, xbins = hdu.data.shape
+
+        crval3 = hdu.header["CRVAL3"]
+        crpix3 = hdu.header["CRPIX3"]
+        cdelt3 = hdu.header["CDELT3"]
+
+        del hdu.header["CRVAL3"]
+        del hdu.header["CRPIX3"]
+        del hdu.header["CDELT3"]
+        del hdu.header["NAXIS3"]
+
+        hdu.header["NAXIS"] = 2 # pretend 2D FITS
+        self.wcs = pywcs.WCS(hdu.header)
+        ROOT.TH2D.__init__(self, name, title, xbins, 0.5, xbins + 0.5, ybins, 0.5, ybins + 0.5)
+        
+        self.vmin = 1e10
+        self.vmax =-1e10
+        for i in range(zbins):
+            v = crval3 + (i + 1 - crpix3)*cdelt3
+            if not (v1 <= v <= v2):
+                continue
+            
+            if v < self.vmin:
+                self.vmin = v
+            if self.vmax < v:
+                self.vmax = v
+
+            setbincontent = self.SetBinContent # for speed up
+            getbincontent = self.GetBinContent # for speed up
+            data = hdu.data[i] # for speed up
+            for y in range(ybins):
+                datay = data[y]
+                for x in range(xbins):
+                    count = getbincontent(x + 1, y + 1)
+                    setbincontent(x + 1, y + 1, count + datay[x])
+
+        self.grid = []
+        self.label = []
 
 class FitsGridLabel(ROOT.TLatex):
     def __init__(self, img, a, b, text, axis):
