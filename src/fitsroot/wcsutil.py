@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.8 2010/02/18 15:28:12 oxon Exp $
+$Id: wcsutil.py,v 1.9 2010/04/05 05:22:39 oxon Exp $
 """
 import numpy
 import pyfits
@@ -209,16 +209,24 @@ class FitsGrid(ROOT.TAttLine):
         prex, prey = 0, 0
         
         if self.coord == 0:
-            A1 = self.img.minA
-            A2 = self.img.maxA
+            if self.dx == 0:
+                A1 = self.img.minA
+                A2 = self.img.maxA
+            else:
+                A1 = max(self.img.minA, self.x0)
+                A2 = min(self.img.maxA, self.x0 + self.dx)
             B1 = B2 = self.y
             dA = (A2 - A1)/(N_POINT - 1.)
             dB = 0.
         else:
             A1 = A2 = self.y
-            B1 = self.img.minB
-            B2 = self.img.maxB
             dA = 0.
+            if self.dx == 0:
+                B1 = self.img.minB
+                B2 = self.img.maxB
+            else:
+                B1 = max(self.img.minB, self.x0)
+                B2 = min(self.img.maxB, self.x0 + self.dx)
             dB = (B2 - B1)/(N_POINT - 1.)
 
         n = 0
