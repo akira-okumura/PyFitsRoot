@@ -1,7 +1,7 @@
 """
 Part of this code is ported from AstroROOT
 
-$Id: wcsutil.py,v 1.10 2010/04/05 06:45:26 oxon Exp $
+$Id: wcsutil.py,v 1.11 2010/04/06 01:35:15 oxon Exp $
 """
 import numpy
 import pyfits
@@ -42,6 +42,16 @@ class FitsImage(ROOT.TH2D):
         else:
             hdu = pyfits.open(fname)[extension[0]]
             ybins, xbins = hdu.data.shape[1:]
+            try:
+                del hdu.header["CRVAL3"]
+                del hdu.header["CRPIX3"]
+                del hdu.header["CDELT3"]
+                del hdu.header["CTYPE3"]
+                del hdu.header["CUNIT3"]
+                del hdu.header["NAXIS3"]
+                hdu.header["NAXIS"] = 2 # pretend 2D FITS
+            except:
+                pass
 
         self.wcs = pywcs.WCS(hdu.header)
         ROOT.TH2D.__init__(self, name, title, xbins, 0.5, xbins + 0.5, ybins, 0.5, ybins + 0.5)
@@ -176,10 +186,15 @@ class IntegratedFitsImage(FitsImage):
         crpix3 = hdu.header["CRPIX3"]
         cdelt3 = hdu.header["CDELT3"]
 
-        del hdu.header["CRVAL3"]
-        del hdu.header["CRPIX3"]
-        del hdu.header["CDELT3"]
-        del hdu.header["NAXIS3"]
+        try:
+            del hdu.header["CRVAL3"]
+            del hdu.header["CRPIX3"]
+            del hdu.header["CDELT3"]
+            del hdu.header["CTYPE3"]
+            del hdu.header["CUNIT3"]
+            del hdu.header["NAXIS3"]
+        except:
+            pass
 
         hdu.header["NAXIS"] = 2 # pretend 2D FITS
         self.wcs = pywcs.WCS(hdu.header)
