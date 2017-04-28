@@ -1,12 +1,11 @@
-$Id: README,v 1.1 2009/03/22 10:25:43 oxon Exp $
+PyFitsRoot a simple python module for ROOT users who plot astronomical FITS images.
 
-PyFitsRoot is designed to handle FITS images in PyROOT.
+# Developers
+- Akira Okumura oxon@mac.com
 
-=== Developers ===
+# Requirements
 
-- Akira Okumura oxon@ceres.phys.s.u-tokyo.ac.jp
-
-=== Requirements ===
+to be updated as these items were written 7 years ago.
 
 - Python 2.5 (other version is not tested)
   http://www.python.org/
@@ -15,14 +14,7 @@ PyFitsRoot is designed to handle FITS images in PyROOT.
 - pyfits
   http://www.stsci.edu/resources/software_hardware/pyfits
 
-=== Getting Started ===
-
-- Installation
-$ tar zxvf PyFitsRoot-x.y.z.tar.gz
-$ cd PyFitsRoot-x.y.z
-$ python setup.py install
-
-=== Acknowledgement ===
+# Acknowledgment
 
 A part of the code is ported from AstroROOT
 http://isdc.unige.ch/index.cgi?Soft+astroroot 
